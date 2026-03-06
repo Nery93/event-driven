@@ -1,3 +1,6 @@
 go 1.25.0
 
 use ./order-service
+use ./payment-service
+use ./inventory-service
+use ./notification-service
