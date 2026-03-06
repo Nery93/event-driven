@@ -25,3 +25,4 @@ type Payment struct {
 	Amount    float64       `json:"amount"`     
 	Status    PaymentStatus `json:"status"`     
 	CreatedAt time.Time     `json:"created_at"` 
+}
