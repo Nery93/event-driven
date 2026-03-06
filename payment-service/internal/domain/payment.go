@@ -12,10 +12,16 @@ const (
 	PaymentStatusFailed    PaymentStatus = "failed"
 )
 
-type Payment struct {
-	ID        string        `json:"id"`         // Unique identifier for the payment
-	OrderID   string        `json:"order_id"`   // ID of the order associated with this payment
-	Amount    float64       `json:"amount"`     // Amount to be paid
-	Status    PaymentStatus `json:"status"`     // Current status of the payment (e.g., "pending", "completed", "failed")
-	CreatedAt time.Time     `json:"created_at"` // Timestamp when the payment was created
+
+type OrderEvent struct {
+	ID          string  `json:"id"`
+	CustomerID  string  `json:"customer_id"`
+	TotalAmount float64 `json:"total_amount"`
 }
+
+type Payment struct {
+	ID        string        `json:"id"`         
+	OrderID   string        `json:"order_id"`   
+	Amount    float64       `json:"amount"`     
+	Status    PaymentStatus `json:"status"`     
+	CreatedAt time.Time     `json:"created_at"` 

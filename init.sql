@@ -6,11 +6,12 @@ CREATE DATABASE inventory_db;
 -- Tabela orders
 \c orders_db;
 CREATE TABLE IF NOT EXISTS orders (
-    id          VARCHAR(36) PRIMARY KEY,
-    customer_id VARCHAR(36) NOT NULL,
-    status      VARCHAR(20) NOT NULL,
-    total       DECIMAL(10,2) NOT NULL,
-    created_at  TIMESTAMP NOT NULL
+    id           VARCHAR(36) PRIMARY KEY,
+    customer_id  VARCHAR(36) NOT NULL,
+    items        JSONB NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    status       VARCHAR(20) NOT NULL,
+    created_at   TIMESTAMP NOT NULL
 );
 
 -- Tabela payments

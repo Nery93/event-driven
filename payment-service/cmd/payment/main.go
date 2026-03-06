@@ -1,4 +1,4 @@
-package payment
+package main
 
 import (
 	"database/sql"
@@ -39,6 +39,10 @@ func main() {
 
 	// Initialize HTTP handler
 	httpHandler := handler.NewHTTPHandler(paymentUseCase)
+
+	// Initialize Kafka consumer
+	consumer := kafka.NewKafkaConsumer(broker, "payment-service")
+	go consumer.ConsumeOrderEvents(paymentUseCase)
 
 	// Set up Gin router
 	router := gin.Default()

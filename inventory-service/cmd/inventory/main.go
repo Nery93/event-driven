@@ -20,7 +20,6 @@ func main() {
 		panic("Error loading .env file")
 	}
 
-	// Initialize PostgreSQL
 	connStr := os.Getenv("DATABASE_URL")
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -28,7 +27,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize Redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     os.Getenv("REDIS_ADDR"),
 		Password: os.Getenv("REDIS_PASSWORD"),
@@ -36,17 +34,17 @@ func main() {
 	})
 
 	repo := repository.NewPostgresRepository(db, rdb)
-
 	broker := os.Getenv("KAFKA_BROKERS")
 	producer := kafka.NewKafkaProducer(broker)
-
 	inventoryUseCase := usecase.NewInventoryUseCase(repo, producer)
 
-	httpHandler := handler.NewHTTPHandler(inventoryUseCase)
+	consumer := kafka.NewKafkaConsumer(broker, "inventory-service")
+	go consumer.ConsumeOrderEvents(inventoryUseCase)
+	go consumer.ConsumePaymentEvents(inventoryUseCase)
 
+	httpHandler := handler.NewHTTPHandler(inventoryUseCase)
 	router := gin.Default()
 	router.POST("/inventory", httpHandler.CreateInventory)
 	router.GET("/inventory/:id", httpHandler.GetProduct)
-
 	router.Run(":8082")
 }
