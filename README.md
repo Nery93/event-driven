@@ -8,6 +8,10 @@ Four microservices handle different domains of an order processing pipeline. Eac
 
 ## Architecture
 
+![Architecture](docs/images/Arquitetura.png)
+
+O diagrama mostra o fluxo completo: o utilizador faz um `POST /orders`, o **order-service** persiste a order e publica um evento no Kafka. A partir daí, **payment-service** e **inventory-service** consomem esse evento de forma independente e assíncrona — sem nenhuma chamada HTTP directa entre serviços.
+
 ```
 order-service     →  orders.created     →  payment-service, inventory-service
 order-service     →  orders.cancelled   →  payment-service, inventory-service
@@ -142,3 +146,35 @@ cd order-service && go test ./internal/usecase/...
 > ```bash
 > cd order-service && GOPATH=/tmp/gopath go mod tidy
 > ```
+
+## Sistema em Funcionamento
+
+Este projecto é um exercício prático de aprendizagem de arquitectura event-driven com Go e Kafka. Os prints abaixo mostram o sistema a correr com os eventos a fluir entre serviços.
+
+### orders.created
+
+![orders.created](docs/images/order.png)
+
+Quando um `POST /orders` é feito, o **order-service** guarda a order na base de dados e publica este evento no tópico `orders.created`. O payload contém o ID único da order, os itens, o valor total e o status `pending`.
+
+### payments.processed
+
+![payments.processed](docs/images/payment.png)
+
+O **payment-service** consome o evento `orders.created`, processa o pagamento e publica `payments.processed`. O `order_id` liga este evento à order original — é assim que os serviços se relacionam sem chamadas HTTP directas.
+
+### inventory.updated
+
+![inventory.updated](docs/images/inventory.png)
+
+O **inventory-service** consome tanto `orders.created` como `payments.processed` e actualiza o stock. Publica `inventory.updated` com o novo estado do produto.
+
+### Consumer Offsets
+
+![consumer-offsets](docs/images/consumer.png)
+
+O Kafka mantém o registo de quais mensagens cada serviço já consumiu (offset). Aqui vemos **payment-service** e **inventory-service** a consumir independentemente o mesmo tópico `orders.created` — cada um no seu próprio consumer group, sem interferir um com o outro.
+
+---
+
+> **Nota:** Este projecto foi desenvolvido com fins educacionais para demonstrar os princípios de Clean Architecture e comunicação assíncrona via Kafka em sistemas distribuídos.
